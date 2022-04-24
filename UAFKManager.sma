@@ -207,7 +207,7 @@ public plugin_natives()
     register_native("afk_set_timer", "native_afk_set_timer");
 }
 
-public native_afk_get_status(iPlugin, iParams)
+public bool:native_afk_get_status(iPlugin, iParams)
 {
     enum { player = 1 };
 
@@ -233,13 +233,12 @@ public native_afk_set_status(iPlugin, iParams)
     }
 }
 
-public native_afk_get_timer(iPlugin, iParams)
+public Float:native_afk_get_timer(iPlugin, iParams)
 {
     enum { player = 1 };
 
     new id = get_param(player);
 
-    // warn 213
     return g_flAFKTime[id];
 }
 
