@@ -20,6 +20,7 @@ enum _:API_FORWARDS
 const TASKID__AFK_CHECK = 19452;
 const TASKID__ONGROUND_CHECK = 19453;
 
+// Automatically create a config in "configs/plugins"
 #define AUTO_CREATE_CONFIG
 
 // 0.1, 0.2, 0.25, 0.5 or 1.0
