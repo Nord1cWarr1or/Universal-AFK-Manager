@@ -1,0 +1,5 @@
+[en]
+UAFKM_CVAR_AFK_TIME = The time after which the player will be considered AFK
+
+[ru]
+UAFKM_CVAR_AFK_TIME = Время, после которого игрок будет считаться AFK
