@@ -17,8 +17,8 @@ enum _:API_FORWARDS
     AFK_TIMER_THINK
 };
 
-const TASKID__AFK_CHECK = 19452;
-const TASKID__ONGROUND_CHECK = 19453;
+const TASKID__AFK_CHECK = 1000;
+const TASKID__ONGROUND_CHECK = 2000;
 
 // Automatically create a config in "configs/plugins"
 #define AUTO_CREATE_CONFIG
