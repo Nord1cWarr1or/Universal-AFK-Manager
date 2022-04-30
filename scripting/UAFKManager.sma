@@ -67,6 +67,7 @@ public RG_OnPlayerSpawn_Post(const id)
     if(!is_user_alive(id))
         return;
 
+    ResetData(id);
     set_task_ex(0.1, "OnGroundCheck", TASKID__ONGROUND_CHECK + id, .flags = SetTask_Repeat);
 }
 
@@ -82,10 +83,12 @@ public OnGroundCheck(id)
 
     if(get_entvar(id, var_flags) & FL_ONGROUND)
     {
+        ExecuteForward(g_iForwardsPointers[AFK_START_CHECK], g_iReturn, id);
+
         remove_task(id + TASKID__ONGROUND_CHECK);
         set_task_ex(CHECK_FREQUENCY, "AFKCheck", id + TASKID__AFK_CHECK, .flags = SetTask_Repeat);
 
-        ExecuteForward(g_iForwardsPointers[AFK_START_CHECK], g_iReturn, id);
+        AFKCheck(id + TASKID__AFK_CHECK);
     }
 }
 
