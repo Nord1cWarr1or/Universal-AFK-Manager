@@ -206,6 +206,7 @@ public plugin_natives()
     register_native("afk_set_status", "native_afk_set_status");
     register_native("afk_get_timer", "native_afk_get_timer");
     register_native("afk_set_timer", "native_afk_set_timer");
+    register_native("afk_rewrite_origin_and_angles", "native_afk_rewrite_origin_and_angles");
 }
 
 public bool:native_afk_get_status(iPlugin, iParams)
@@ -251,6 +252,16 @@ public native_afk_set_timer(iPlugin, iParams)
     new Float:flNewTime = get_param_f(newTime);
 
     g_flAFKTime[id] = flNewTime;
+}
+
+public native_afk_rewrite_origin_and_angles(iPlugin, iParams)
+{
+    enum { player = 1 };
+
+    new id = get_param(player);
+
+    get_entvar(id, var_origin, g_flSavedPlayerOrigin[id]);
+    get_entvar(id, var_angles, g_flSavedPlayerAngles[id]);
 }
 
 CreateCVars()
