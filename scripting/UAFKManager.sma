@@ -148,7 +148,6 @@ AFKStart(const id)
         return PLUGIN_HANDLED;
 
     g_bIsPlayerAFK[id] = true;
-    g_flAFKTime[id] = 0.0;
 
     ExecuteForward(g_iForwardsPointers[AFK_START_POST], g_iReturn, id);
     return PLUGIN_CONTINUE;
