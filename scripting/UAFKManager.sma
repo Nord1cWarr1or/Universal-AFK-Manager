@@ -49,8 +49,8 @@ public plugin_init()
         register_plugin(PluginName, PluginVersion, PluginAuthor);
     }
 
-    RegisterHookChain(RG_CBasePlayer_Spawn,     "RG_OnPlayerSpawn_Post",    .post = true);
-    RegisterHookChain(RG_CBasePlayer_Killed,    "RG_OnPlayerKilled_Post",   .post = true);
+    RegisterHookChain(RG_CBasePlayer_Spawn, "RG_OnPlayerSpawn_Post", .post = true);
+    RegisterHookChain(RG_CBasePlayer_Killed, "RG_OnPlayerKilled_Post", .post = true);
 
     CreateCVars();
     CreateForwards();
@@ -68,7 +68,7 @@ public RG_OnPlayerSpawn_Post(const id)
         return;
 
     ResetData(id);
-    set_task_ex(0.1, "OnGroundCheck", TASKID__ONGROUND_CHECK + id, .flags = SetTask_Repeat);
+    set_task_ex(0.1, "OnGroundCheck", id + TASKID__ONGROUND_CHECK, .flags = SetTask_Repeat);
 }
 
 public OnGroundCheck(id)
