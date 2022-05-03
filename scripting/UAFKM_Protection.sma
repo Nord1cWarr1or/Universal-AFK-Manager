@@ -32,6 +32,7 @@ public player_start_afk_pre(const id)
 
     set_entvar(id, var_takedamage, DAMAGE_NO);
     set_entvar(id, var_solid, SOLID_NOT);
+    set_member(id, m_bIsDefusing, true);
 
     return PLUGIN_CONTINUE;
 }
@@ -40,6 +41,7 @@ public player_end_afk_post(const id)
 {
     set_entvar(id, var_takedamage, DAMAGE_AIM);
     set_entvar(id, var_solid, SOLID_SLIDEBOX);
+    set_member(id, m_bIsDefusing, false);
 }
 
 public player_start_afk_check(const id)
