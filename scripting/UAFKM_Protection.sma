@@ -22,10 +22,18 @@ public plugin_init()
     RegisterHookChain(RG_CBasePlayer_Killed, "RG_OnPlayerKilled_Pre", .post = false);
 }
 
-public player_start_afk_post(const id)
+public player_start_afk_pre(const id)
 {
+    if(get_entvar(id, var_waterlevel) == 2)
+        return PLUGIN_HANDLED;
+
+    if(get_entvar(id, var_takedamage) == DAMAGE_NO)
+        return PLUGIN_HANDLED;
+
     set_entvar(id, var_takedamage, DAMAGE_NO);
     set_entvar(id, var_solid, SOLID_NOT);
+
+    return PLUGIN_CONTINUE;
 }
 
 public player_end_afk_post(const id)
