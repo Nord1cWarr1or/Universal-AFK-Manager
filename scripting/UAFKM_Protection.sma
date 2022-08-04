@@ -13,7 +13,7 @@ public stock const PluginDescription[]  = "Sample text";
 
 public plugin_init()
 {
-    if(get_amxx_verint() < 1100)
+    if(uafkm_get_amxx_version() < 1100)
     {
         register_plugin(PluginName, PluginVersion, PluginAuthor);
     }
@@ -66,29 +66,4 @@ public RG_OnPlayerKilled_Pre(const id, pevAttacker, iGib)
 public client_disconnected(id)
 {
     g_flSavedAFKTime[id] = 0.0;
-}
-
-stock get_amxx_verint()
-{
-    new buffer[16];
-    get_amxx_verstring(buffer, charsmax(buffer));
-
-    if(strfind(buffer, "1.10.0") != -1)
-    {
-        return 1100;
-    }
-    else if(strfind(buffer, "1.9.0") != -1)
-    {
-        return 190;
-    }
-    else if(strfind(buffer, "1.8.3") != -1)
-    {
-        return 183;
-    }
-    else if(strfind(buffer, "1.8.2") != -1)
-    {
-        return 182;
-    }
-
-    return 0;
 }
