@@ -36,6 +36,8 @@ new g_iReturn;
 
 new Float:afk_time;
 
+new AMXX_VERSION;
+
 public stock const PluginName[]         = "Universal AFK Manager";
 public stock const PluginVersion[]      = "0.1.0 alpha";
 public stock const PluginAuthor[]       = "Nordic Warrior";
@@ -44,7 +46,7 @@ public stock const PluginDescription[]  = "Sample text";
 
 public plugin_init()
 {
-    if(get_amxx_verint() < 1100)
+    if(AMXX_VERSION < 1100)
     {
         register_plugin(PluginName, PluginVersion, PluginAuthor);
     }
@@ -60,6 +62,11 @@ public plugin_init()
 #if defined AUTO_CREATE_CONFIG
     AutoExecConfig();
 #endif
+}
+
+public plugin_precache()
+{
+    AMXX_VERSION = get_amxx_verint();
 }
 
 public RG_OnPlayerSpawn_Post(const id)
@@ -209,6 +216,8 @@ public plugin_natives()
     register_native("afk_get_timer", "native_afk_get_timer");
     register_native("afk_set_timer", "native_afk_set_timer");
     register_native("afk_rewrite_origin_and_angles", "native_afk_rewrite_origin_and_angles");
+
+    register_native("uafkm_get_amxx_version", "native_uafkm_get_amxx_version");
 }
 
 public bool:native_afk_get_status(iPlugin, iParams)
@@ -264,6 +273,11 @@ public native_afk_rewrite_origin_and_angles(iPlugin, iParams)
 
     get_entvar(id, var_origin, g_flSavedPlayerOrigin[id]);
     get_entvar(id, var_angles, g_flSavedPlayerAngles[id]);
+}
+
+public native_uafkm_get_amxx_version(iPlugin, iParams)
+{
+    return AMXX_VERSION;
 }
 
 CreateCVars()
