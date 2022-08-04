@@ -96,10 +96,20 @@ native Float:afk_get_timer(const id);
  * Sets the AFK timer of a player
  *
  * @param id        Player index
+ * @param flTime    New timer value
  *
  * @noreturn
  */
 native afk_set_timer(const id, Float:flTime);
+
+/**
+ * Updates players`s origin & angle 
+ *
+ * @param id        Player index
+ *
+ * @noreturn
+ */
+native afk_rewrite_origin_and_angles(const id);
 
 
 /**
