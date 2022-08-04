@@ -100,3 +100,16 @@ native Float:afk_get_timer(const id);
  * @noreturn
  */
 native afk_set_timer(const id, Float:flTime);
+
+
+/**
+ * Gets AMXX version from core
+ *
+ * @return			AMXX version,
+ *					where:
+ *					182 - AMXMODX 1.8.2
+ *					183 - AMXMODX 1.8.3
+ *					190 - AMXMODX 1.9.0
+ *					1100 - AMXMODX 1.10.0
+ */
+native uafkm_get_amxx_version()
