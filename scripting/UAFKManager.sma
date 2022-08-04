@@ -36,7 +36,7 @@ new g_iReturn;
 
 new Float:afk_time;
 
-new AMXX_VERSION;
+new g_iAmxxVersion;
 
 public stock const PluginName[]         = "Universal AFK Manager";
 public stock const PluginVersion[]      = "0.1.0 alpha";
@@ -46,7 +46,7 @@ public stock const PluginDescription[]  = "Sample text";
 
 public plugin_init()
 {
-    if(AMXX_VERSION < 1100)
+    if(g_iAmxxVersion < 1100)
     {
         register_plugin(PluginName, PluginVersion, PluginAuthor);
     }
@@ -66,7 +66,7 @@ public plugin_init()
 
 public plugin_precache()
 {
-    AMXX_VERSION = get_amxx_verint();
+    g_iAmxxVersion = get_amxx_verint();
 }
 
 public RG_OnPlayerSpawn_Post(const id)
@@ -277,7 +277,7 @@ public native_afk_rewrite_origin_and_angles(iPlugin, iParams)
 
 public native_uafkm_get_amxx_version(iPlugin, iParams)
 {
-    return AMXX_VERSION;
+    return g_iAmxxVersion;
 }
 
 CreateCVars()
