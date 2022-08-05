@@ -103,7 +103,7 @@ native Float:afk_get_timer(const id);
 native afk_set_timer(const id, Float:flTime);
 
 /**
- * Updates players`s origin & angle 
+ * Updates player's origin & angle 
  *
  * @param id        Player index
  *
