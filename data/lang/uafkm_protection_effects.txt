@@ -1,0 +1,13 @@
+[en]
+UAFKM_CVAR_AFK_EFFECTS                              = Protection activation effects^na - transparency^nb - screenfade^nc - overhead icon^nd - messages
+UAFKM_CVAR_AFK_SCREENFADE_AMOUNT                    = Screenfade amount
+UAFKM_CVAR_AFK_RANDOM_SCREENFADE_COLOR              = Enable random screenfade color
+UAFKM_CVAR_AFK_RANDOM_SCREENFADE_TYPE               = Random screenfade type^n1 - color change when entering AFK mode^n2 - every few seconds
+UAFKM_CVAR_AFK_RANDOM_SCREENFADE_ROTATION_FREQUENCY = Frequency of random screenfade color change
+
+[ru]
+UAFKM_CVAR_AFK_EFFECTS                              = Эффекты при активации защиты.^na - прозрачность^nb - затемнение экрана^nc - иконка над головой^nd - надписи
+UAFKM_CVAR_AFK_SCREENFADE_AMOUNT                    = Глубина затемнения экрана
+UAFKM_CVAR_AFK_RANDOM_SCREENFADE_COLOR              = Включить случайный цвет затемнения экрана
+UAFKM_CVAR_AFK_RANDOM_SCREENFADE_TYPE               = Тип случайного затемнения экрана^n1 - смена цвета при входе в АФК режим^n2 - каждые несколько секунд
+UAFKM_CVAR_AFK_RANDOM_SCREENFADE_ROTATION_FREQUENCY = Частота смены случайного цвета затемнения экрана
