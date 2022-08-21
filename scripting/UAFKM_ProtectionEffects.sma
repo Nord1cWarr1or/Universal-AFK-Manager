@@ -46,6 +46,8 @@ public plugin_init()
         register_plugin(PluginName, PluginVersion, PluginAuthor);
     }
 
+    register_dictionary("uafkm_protection_effects.txt");
+
     RegisterHookChain(RG_CBasePlayer_Spawn, "RG_OnPlayerSpawn_Pre", .post = false);
     RegisterHookChain(RG_CBasePlayer_Killed, "RG_OnPlayerKilled_Pre", .post = false);
 
@@ -265,7 +267,7 @@ CreateCVars()
         create_cvar(
             .name = "afk_random_screenfade_type", 
             .string = "1",
-            .description = GetCvarDesc("UAFKM_CVAR_AFK_RANDOM_SCREENFADE_COLOR")
+            .description = GetCvarDesc("UAFKM_CVAR_AFK_RANDOM_SCREENFADE_TYPE")
         ),
 
         afk_random_screenfade_type
