@@ -20,7 +20,7 @@
  *
  * @param id            Player index
  * @param time          Current AFK time
- * @param spectator     The player is spectator
+ * @param spectator     If true, the player is spectator
  *
  * @noreturn
  */
