@@ -57,11 +57,11 @@ forward player_end_afk_post(const id);
  *       a player is AFK, independent of "afk_time" CVar
  *
  * @param id        Player index
- * @param flTime    Current AFK time
+ * @param time    Current AFK time
  *
  * @noreturn
  */
-forward player_afk_think(const id, Float:flTime);
+forward player_afk_think(const id, Float:time);
 
 /**
  * Gets the AFK status of a player
@@ -76,12 +76,12 @@ native bool:afk_get_status(const id);
  * Sets the AFK status of a player
  *
  * @param id        Player index
- * @param bStatus   True to set a player in AFK
+ * @param status   True to set a player in AFK
  *                  false to return a player from AFK
  *
  * @noreturn
  */
-native afk_set_status(const id, bool:bStatus);
+native afk_set_status(const id, bool:status);
 
 /**
  * Gets the AFK timer of a player
@@ -96,30 +96,8 @@ native Float:afk_get_timer(const id);
  * Sets the AFK timer of a player
  *
  * @param id        Player index
- * @param flTime    New timer value
+ * @param time    New timer value
  *
  * @noreturn
  */
-native afk_set_timer(const id, Float:flTime);
-
-/**
- * Updates player's origin & angle 
- *
- * @param id        Player index
- *
- * @noreturn
- */
-native afk_rewrite_origin_and_angles(const id);
-
-
-/**
- * Gets AMXX version from core
- *
- * @return			AMXX version,
- *					where:
- *					182 - AMXMODX 1.8.2
- *					183 - AMXMODX 1.8.3
- *					190 - AMXMODX 1.9.0
- *					1100 - AMXMODX 1.10.0
- */
-native uafkm_get_amxx_version()
+native afk_set_timer(const id, Float:time);
