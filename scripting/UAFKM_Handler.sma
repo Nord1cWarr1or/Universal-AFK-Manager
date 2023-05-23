@@ -139,7 +139,7 @@ public native_afk_set_status(plugin, params) {
 
     new bool:spectator, TeamName:playerTeam;
     playerTeam = get_member(id, m_iTeam);
-    spectator = bool:!is_user_alive(id) && (playerTeam != TEAM_CT || playerTeam != TEAM_TERRORIST)
+    spectator = bool:!is_user_alive(id) && (playerTeam != TEAM_CT && playerTeam != TEAM_TERRORIST)
 
     if (status) {
         AFKStart(id, spectator);
