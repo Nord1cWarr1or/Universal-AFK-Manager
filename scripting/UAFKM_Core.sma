@@ -6,12 +6,8 @@
 enum _:XYZ { Float:X, Float:Y, Float:Z };
 
 enum _:API_FORWARDS {
-    // AFK_START_CHECK,
     AFK_TIMER_THINK
 };
-
-const TASKID__AFK_CHECK = 1000;
-const TASKID__ONGROUND_CHECK = 2000;
 
 // 0.1, 0.2, 0.25, 0.5 or 1.0
 const Float:CHECK_FREQUENCY = 0.5;
@@ -33,9 +29,6 @@ public plugin_init() {
         register_plugin(PluginName, PluginVersion, PluginAuthor);
     }
 
-    // RegisterHookChain(RG_CBasePlayer_Spawn, "RG_OnPlayerSpawn_Post", .post = true);
-    // RegisterHookChain(RG_CBasePlayer_Killed, "RG_OnPlayerKilled_Post", .post = true);
-
     CreateForwards();
 }
 
@@ -44,7 +37,7 @@ public client_putinserver(id) {
         return;
     }
 
-    set_task_ex(CHECK_FREQUENCY, "AFKCheck", id + TASKID__AFK_CHECK, .flags = SetTask_Repeat);
+    set_task_ex(CHECK_FREQUENCY, "AFKCheck", id, .flags = SetTask_Repeat);
 }
 
 public client_disconnected(id) {
@@ -52,8 +45,6 @@ public client_disconnected(id) {
 }
 
 public AFKCheck(id) {
-    id -= TASKID__AFK_CHECK;
-
     if (!is_user_connected(id)) {
         log_amx("wtf?");
         ResetData(id);
@@ -106,13 +97,12 @@ AFKCheckSpectator(const id) {
 }
 
 ResetData(const id) {
-    remove_task(id + TASKID__AFK_CHECK);
+    remove_task(id);
     g_AFKTime[id] = 0.0;
 }
 
 
 CreateForwards() {
-    // g_forwardsPointers[AFK_START_CHECK] = CreateMultiForward("player_start_afk_check", ET_IGNORE, FP_CELL);
     g_forwardsPointers[AFK_TIMER_THINK] = CreateMultiForward("player_afk_think", ET_IGNORE, FP_CELL, FP_FLOAT, FP_CELL);
 }
 
