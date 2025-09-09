@@ -6,60 +6,60 @@
 /**
  * Called when a player becomes AFK (Pre)
  *
- * @param id            Player index
- * @param spectator     If true, the player is spectator
+ * @param id                Player index
+ * @param is_spectator      If true, the player is is_spectator
  *
  * @return          Return PLUGIN_HANDLED to prevent
  *                  a player from becoming AFK
  */
-forward player_start_afk_pre(const id, bool: spectator);
+forward player_start_afk_pre(const id, bool: is_spectator);
 
 /**
  * Called when a player becomes AFK (Post)
  *
- * @param id            Player index
- * @param spectator     If true, the player is spectator
+ * @param id                Player index
+ * @param is_spectator      If true, the player is is_spectator
  *
  * @noreturn
  */
-forward player_start_afk_post(const id, bool: spectator);
+forward player_start_afk_post(const id, bool: is_spectator);
 
 /**
  * Called when a player returns from AFK (Pre)
  *
- * @param id            Player index
- * @param spectator     If true, the player is spectator
+ * @param id                Player index
+ * @param is_spectator      If true, the player is is_spectator
  *
  * @return          Return PLUGIN_HANDLED to prevent
  *                  a player from leaving AFK
  */
-forward player_end_afk_pre(const id, bool: spectator);
+forward player_end_afk_pre(const id, bool: is_spectator);
 
 /**
  * Called when a player returns from AFK (Post)
  *
- * @param id            Player index
- * @param spectator     If true, the player is spectator
+ * @param id                Player index
+ * @param is_spectator      If true, the player is is_spectator
  *
  * @noreturn
  */
-forward player_end_afk_post(const id, bool: spectator);
+forward player_end_afk_post(const id, bool: is_spectator);
 
 /**
  * Gets the AFK status of a player
  *
- * @param id        Player index
+ * @param id                Player index
  *
- * @return          True if player is AFK, false otherwise
+ * @return                  True if player is AFK, false otherwise
  */
 native bool: afk_get_status(const id);
 
 /**
  * Sets the AFK status of a player
  *
- * @param id        Player index
- * @param status	True to set a player in AFK
- *                  false to return a player from AFK
+ * @param id                Player index
+ * @param status            True to set a player in AFK
+ *                          false to return a player from AFK
  *
  * @noreturn
  */
