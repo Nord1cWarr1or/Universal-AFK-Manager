@@ -73,6 +73,7 @@ AFKCheckAlive(const id) {
         }
     } else {
         player_afk_timer[id] = 0.0;
+        ExecuteForward(forward_pointers[AFK_TIMER_THINK], return_value, id, player_afk_timer[id], false);
     }
 
     xs_vec_copy(current_player_view_angle, old_player_view_angle[id]);
@@ -93,6 +94,7 @@ AFKCheckSpectator(const id) {
         }
     } else {
         player_afk_timer[id] = 0.0;
+        ExecuteForward(forward_pointers[AFK_TIMER_THINK], return_value, id, player_afk_timer[id], true);
     }
 }
 
@@ -100,7 +102,6 @@ ResetData(const id) {
     remove_task(id);
     player_afk_timer[id] = 0.0;
 }
-
 
 CreateForwards() {
     forward_pointers[AFK_TIMER_THINK] = CreateMultiForward("player_afk_think", ET_IGNORE, FP_CELL, FP_FLOAT, FP_CELL);
