@@ -69,26 +69,24 @@ create_cvars() {
     );
 }
 
-public player_afk_think(const id, Float: time, bool: spectator) {
-    new Float: player_afk_time = afk_get_timer(id);
-
+public player_afk_think(const id, Float: player_afk_time, bool: is_spectator) {
     if (is_player_afk[id]) {
-        if (spectator && player_afk_time < afk_time_spec) {
-            afk_end(id, spectator);
-        } else if (!spectator && player_afk_time < afk_time) {
-            afk_end(id, spectator);
+        if (is_spectator && player_afk_time < afk_time_spec) {
+            afk_end(id, is_spectator);
+        } else if (!is_spectator && player_afk_time < afk_time) {
+            afk_end(id, is_spectator);
         }
     } else {
-        if (spectator && player_afk_time >= afk_time_spec) {
-            afk_start(id, spectator);
-        } else if (!spectator && player_afk_time >= afk_time) {
-            afk_start(id, spectator);
+        if (is_spectator && player_afk_time >= afk_time_spec) {
+            afk_start(id, is_spectator);
+        } else if (!is_spectator && player_afk_time >= afk_time) {
+            afk_start(id, is_spectator);
         }
     }
 }
 
-afk_start(const id, bool: spectator) {
-    ExecuteForward(forward_pointers[AFK_START_PRE], return_value, id, spectator);
+afk_start(const id, bool: is_spectator) {
+    ExecuteForward(forward_pointers[AFK_START_PRE], return_value, id, is_spectator);
 
     if(return_value == PLUGIN_HANDLED) {
         return;
@@ -96,11 +94,11 @@ afk_start(const id, bool: spectator) {
 
     is_player_afk[id] = true;
 
-    ExecuteForward(forward_pointers[AFK_START_POST], return_value, id, spectator);
+    ExecuteForward(forward_pointers[AFK_START_POST], return_value, id, is_spectator);
 }
 
-afk_end(const id, bool: spectator) {
-    ExecuteForward(forward_pointers[AFK_END_PRE], return_value, id, spectator);
+afk_end(const id, bool: is_spectator) {
+    ExecuteForward(forward_pointers[AFK_END_PRE], return_value, id, is_spectator);
 
     if(return_value == PLUGIN_HANDLED) {
         return;
@@ -108,7 +106,7 @@ afk_end(const id, bool: spectator) {
 
     is_player_afk[id] = false;
 
-    ExecuteForward(forward_pointers[AFK_END_POST], return_value, id, spectator);
+    ExecuteForward(forward_pointers[AFK_END_POST], return_value, id, is_spectator);
 }
 
 create_forwards() {
@@ -137,14 +135,13 @@ public native_afk_set_status(plugin, params) {
     new id = get_param(arg_player);
     new bool: status = bool: get_param(arg_status);
 
-    new bool: spectator, TeamName: player_team;
-    player_team = get_member(id, m_iTeam);
-    spectator = bool: !is_user_alive(id) && (player_team != TEAM_CT && player_team != TEAM_TERRORIST)
+    new TeamName: player_team = get_member(id, m_iTeam);
+    new bool: is_spectator = bool: (!is_user_alive(id) && (player_team == TEAM_UNASSIGNED || player_team == TEAM_SPECTATOR));
 
     if (status) {
-        afk_start(id, spectator);
+        afk_start(id, is_spectator);
     } else {
-        afk_end(id, spectator);
+        afk_end(id, is_spectator);
     }
 }
 
