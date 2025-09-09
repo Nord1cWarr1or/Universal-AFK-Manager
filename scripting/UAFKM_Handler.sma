@@ -5,7 +5,7 @@
 
 #define GetCvarDesc(%0) fmt("%L", LANG_SERVER, %0)
 
-enum _:API_FORWARDS {
+enum any: API_FORWARDS {
     AFK_START_PRE,
     AFK_START_POST,
     AFK_END_PRE,
@@ -15,12 +15,12 @@ enum _:API_FORWARDS {
 // Automatically create a config in "configs/plugins"
 #define AUTO_CREATE_CONFIG
 
-new bool:g_isPlayerAFK[MAX_PLAYERS + 1];
+new bool: is_player_afk[MAX_PLAYERS + 1];
 
-new g_forwardsPointers[API_FORWARDS];
-new g_return;
+new forward_pointers[API_FORWARDS];
+new return_value;
 
-new Float:afk_time, Float:afk_time_spec;
+new Float: afk_time, Float: afk_time_spec;
 
 public stock const PluginName[]         = "UAFKM: Handler";
 public stock const PluginVersion[]      = "0.1.0 alpha";
@@ -33,8 +33,8 @@ public plugin_init() {
         register_plugin(PluginName, PluginVersion, PluginAuthor);
     }
 
-    CreateCVars();
-    CreateForwards();
+    create_cvars();
+    create_forwards();
 
     register_dictionary("uafk_manager.txt");
 
@@ -43,7 +43,7 @@ public plugin_init() {
 #endif
 }
 
-CreateCVars() {
+create_cvars() {
     bind_pcvar_float(
         create_cvar(
             .name = "afk_time", 
@@ -69,53 +69,53 @@ CreateCVars() {
     );
 }
 
-public player_afk_think(const id, Float:time, bool:spectator) {
-    new Float:player_afk_time = afk_get_timer(id);
+public player_afk_think(const id, Float: time, bool: spectator) {
+    new Float: player_afk_time = afk_get_timer(id);
 
-    if (g_isPlayerAFK[id]) {
+    if (is_player_afk[id]) {
         if (spectator && player_afk_time < afk_time_spec) {
-            AFKEnd(id, spectator);
+            afk_end(id, spectator);
         } else if (!spectator && player_afk_time < afk_time) {
-            AFKEnd(id, spectator);
+            afk_end(id, spectator);
         }
     } else {
         if (spectator && player_afk_time >= afk_time_spec) {
-            AFKStart(id, spectator);
+            afk_start(id, spectator);
         } else if (!spectator && player_afk_time >= afk_time) {
-            AFKStart(id, spectator);
+            afk_start(id, spectator);
         }
     }
 }
 
-AFKStart(const id, bool:spectator) {
-    ExecuteForward(g_forwardsPointers[AFK_START_PRE], g_return, id, spectator);
+afk_start(const id, bool: spectator) {
+    ExecuteForward(forward_pointers[AFK_START_PRE], return_value, id, spectator);
 
-    if(g_return == PLUGIN_HANDLED) {
+    if(return_value == PLUGIN_HANDLED) {
         return;
     }
 
-    g_isPlayerAFK[id] = true;
+    is_player_afk[id] = true;
 
-    ExecuteForward(g_forwardsPointers[AFK_START_POST], g_return, id, spectator);
+    ExecuteForward(forward_pointers[AFK_START_POST], return_value, id, spectator);
 }
 
-AFKEnd(const id, bool:spectator) {
-    ExecuteForward(g_forwardsPointers[AFK_END_PRE], g_return, id, spectator);
+afk_end(const id, bool: spectator) {
+    ExecuteForward(forward_pointers[AFK_END_PRE], return_value, id, spectator);
 
-    if(g_return == PLUGIN_HANDLED) {
+    if(return_value == PLUGIN_HANDLED) {
         return;
     }
 
-    g_isPlayerAFK[id] = false;
+    is_player_afk[id] = false;
 
-    ExecuteForward(g_forwardsPointers[AFK_END_POST], g_return, id, spectator);
+    ExecuteForward(forward_pointers[AFK_END_POST], return_value, id, spectator);
 }
 
-CreateForwards() {
-    g_forwardsPointers[AFK_START_PRE] = CreateMultiForward("player_start_afk_pre", ET_STOP, FP_CELL, FP_CELL);
-    g_forwardsPointers[AFK_START_POST] = CreateMultiForward("player_start_afk_post", ET_IGNORE, FP_CELL, FP_CELL);
-    g_forwardsPointers[AFK_END_PRE] = CreateMultiForward("player_end_afk_pre", ET_STOP, FP_CELL, FP_CELL);
-    g_forwardsPointers[AFK_END_POST] = CreateMultiForward("player_end_afk_post", ET_IGNORE, FP_CELL, FP_CELL);
+create_forwards() {
+    forward_pointers[AFK_START_PRE] = CreateMultiForward("player_start_afk_pre", ET_STOP, FP_CELL, FP_CELL);
+    forward_pointers[AFK_START_POST] = CreateMultiForward("player_start_afk_post", ET_IGNORE, FP_CELL, FP_CELL);
+    forward_pointers[AFK_END_PRE] = CreateMultiForward("player_end_afk_pre", ET_STOP, FP_CELL, FP_CELL);
+    forward_pointers[AFK_END_POST] = CreateMultiForward("player_end_afk_post", ET_IGNORE, FP_CELL, FP_CELL);
 }
 
 public plugin_natives() {
@@ -123,28 +123,28 @@ public plugin_natives() {
     register_native("afk_set_status", "native_afk_set_status");
 }
 
-public bool:native_afk_get_status(plugin, params) {
+public bool: native_afk_get_status(plugin, params) {
     enum { arg_player = 1 };
 
     new id = get_param(arg_player);
 
-    return g_isPlayerAFK[id];
+    return is_player_afk[id];
 }
 
 public native_afk_set_status(plugin, params) {
     enum { arg_player = 1, arg_status };
 
     new id = get_param(arg_player);
-    new bool:status = bool:get_param(arg_status);
+    new bool: status = bool: get_param(arg_status);
 
-    new bool:spectator, TeamName:playerTeam;
-    playerTeam = get_member(id, m_iTeam);
-    spectator = bool:!is_user_alive(id) && (playerTeam != TEAM_CT && playerTeam != TEAM_TERRORIST)
+    new bool: spectator, TeamName: player_team;
+    player_team = get_member(id, m_iTeam);
+    spectator = bool: !is_user_alive(id) && (player_team != TEAM_CT && player_team != TEAM_TERRORIST)
 
     if (status) {
-        AFKStart(id, spectator);
+        afk_start(id, spectator);
     } else {
-        AFKEnd(id, spectator);
+        afk_end(id, spectator);
     }
 }
 
