@@ -1,9 +1,6 @@
 #include <amxmodx>
 #include <amxmisc>
 #include <reapi>
-#include <xs>
-
-enum any: XYZ { Float: X, Float: Y, Float: Z };
 
 enum any: API_FORWARDS {
     AFK_TIMER_THINK
@@ -12,7 +9,6 @@ enum any: API_FORWARDS {
 // 0.1, 0.2, 0.25, 0.5 or 1.0
 const Float: CHECK_FREQUENCY = 0.5;
 
-new Float: old_player_view_angle[MAX_PLAYERS + 1][XYZ];
 new Float: player_afk_timer[MAX_PLAYERS + 1];
 
 new forward_pointers[API_FORWARDS];
@@ -29,7 +25,7 @@ public plugin_init() {
         register_plugin(PluginName, PluginVersion, PluginAuthor);
     }
 
-    CreateForwards();
+    create_forwards();
 }
 
 public client_putinserver(id) {
@@ -37,73 +33,40 @@ public client_putinserver(id) {
         return;
     }
 
-    set_task_ex(CHECK_FREQUENCY, "AFKCheck", id, .flags = SetTask_Repeat);
+    set_task_ex(CHECK_FREQUENCY, "afk_check", id, .flags = SetTask_Repeat);
 }
 
 public client_disconnected(id) {
-    ResetData(id);
+    reset_data(id);
 }
 
-public AFKCheck(id) {
+public afk_check(id) {
     if (!is_user_connected(id)) {
-        log_amx("wtf?");
-        ResetData(id);
+        reset_data(id);
         return;
     }
 
-    if (is_user_alive(id)) {
-        AFKCheckAlive(id);
-    } else {
-        AFKCheckSpectator(id);
-    }
-}
-
-AFKCheckAlive(const id) {
-    new Float: current_player_view_angle[XYZ];
-    get_entvar(id, var_v_angle, current_player_view_angle);
-
-    if (get_gametime() - Float: get_member(id, m_fLastMovement) > CHECK_FREQUENCY
-        && !get_entvar(id, var_button)
-        && xs_vec_equal(current_player_view_angle, old_player_view_angle[id])
-    ) {
-        player_afk_timer[id] += CHECK_FREQUENCY;
-
-        if (floatfract(player_afk_timer[id]) == 0.0) {
-            ExecuteForward(forward_pointers[AFK_TIMER_THINK], return_value, id, player_afk_timer[id], false);
-        }
-    } else {
-        player_afk_timer[id] = 0.0;
-        ExecuteForward(forward_pointers[AFK_TIMER_THINK], return_value, id, player_afk_timer[id], false);
-    }
-
-    xs_vec_copy(current_player_view_angle, old_player_view_angle[id]);
-}
-
-AFKCheckSpectator(const id) {
     new TeamName: player_team = get_member(id, m_iTeam);
+    new bool: is_spectator = bool: (!is_user_alive(id) && (player_team == TEAM_UNASSIGNED || player_team == TEAM_SPECTATOR));
 
-    if (player_team == TEAM_CT || player_team == TEAM_TERRORIST) {
-        return;
-    }
-
-    if (get_gametime() - Float: get_member(id, m_fLastMovement) > CHECK_FREQUENCY && !get_entvar(id, var_button)) {
+    if (get_gametime() - Float: get_member(id, m_fLastMovement) > CHECK_FREQUENCY) {
         player_afk_timer[id] += CHECK_FREQUENCY;
 
         if (floatfract(player_afk_timer[id]) == 0.0) {
-            ExecuteForward(forward_pointers[AFK_TIMER_THINK], return_value, id, player_afk_timer[id], true);
+            ExecuteForward(forward_pointers[AFK_TIMER_THINK], return_value, id, player_afk_timer[id], is_spectator);
         }
     } else {
         player_afk_timer[id] = 0.0;
-        ExecuteForward(forward_pointers[AFK_TIMER_THINK], return_value, id, player_afk_timer[id], true);
+        ExecuteForward(forward_pointers[AFK_TIMER_THINK], return_value, id, player_afk_timer[id], is_spectator);
     }
 }
 
-ResetData(const id) {
+reset_data(const id) {
     remove_task(id);
     player_afk_timer[id] = 0.0;
 }
 
-CreateForwards() {
+create_forwards() {
     forward_pointers[AFK_TIMER_THINK] = CreateMultiForward("player_afk_think", ET_IGNORE, FP_CELL, FP_FLOAT, FP_CELL);
 }
 
