@@ -4,12 +4,11 @@
 #include <reapi>
 
 #include <msgstocks>
-#include <universal_afk_manager>
+#include <uafkm_handler>
 
 #define GetCvarDesc(%0) fmt("%L", LANG_SERVER, %0)
 
-enum _:AFKEffectsFlags (<<=1)
-{
+enum any: AFKEffectsFlags (<<=1) {
     Effects_Transparency = 1,
     Effects_ScreenFade,
     Effects_Icon
@@ -21,9 +20,9 @@ new const ICON_CLASSNAME[] = "afk_icon";
 // Automatically create a config in "configs/plugins"
 #define AUTO_CREATE_CONFIG
 
-new g_iIconModelIndex;
-new g_pCvarEffects;
-new g_iPlayerIcon[MAX_PLAYERS + 1] = { NULLENT, ... };
+new icon_modelindex;
+new effects_cvar_pointer;
+new afk_incon_ent_id[MAX_PLAYERS + 1] = { NULLENT, ... };
 
 new afk_effects,
     afk_screenfade_amount,
@@ -31,7 +30,7 @@ new afk_effects,
     afk_random_screenfade_type,
     Float:afk_random_screenfade_rotation_frequency
 
-new g_szEffects[4];
+new effects[4];
 
 public stock const PluginName[]         = "UAFKM: Protection Effects";
 public stock const PluginVersion[]      = "0.1.0";
@@ -39,130 +38,111 @@ public stock const PluginAuthor[]       = "Nordic Warrior";
 public stock const PluginURL[]          = "https://github.com/Nord1cWarr1or/Universal-AFK-Manager";
 public stock const PluginDescription[]  = "Sample text";
 
-public plugin_init()
-{
-    if(uafkm_get_amxx_version() < 1100)
-    {
+public plugin_init() {
+    if (get_amxx_verint() < 1100) {
         register_plugin(PluginName, PluginVersion, PluginAuthor);
     }
 
     register_dictionary("uafkm_protection_effects.txt");
 
-    RegisterHookChain(RG_CBasePlayer_Spawn, "RG_OnPlayerSpawn_Pre", .post = false);
-    RegisterHookChain(RG_CBasePlayer_Killed, "RG_OnPlayerKilled_Pre", .post = false);
+    RegisterHookChain(RG_CBasePlayer_Spawn, "player_spawn", .post = false);
+    RegisterHookChain(RG_CBasePlayer_Killed, "player_killed", .post = false);
 
-    CreateCVars();
+    create_cvars();
 
 #if defined AUTO_CREATE_CONFIG
     AutoExecConfig();
 #endif
 
-    hook_cvar_change(g_pCvarEffects, "CvarEffectsChanged");
+    hook_cvar_change(effects_cvar_pointer, "hook_cvar_afk_effects");
 
     // Fix https://github.com/alliedmodders/amxmodx/issues/728#issue-450682936
     // Credits: wopox1337 (https://github.com/ChatAdditions/ChatAdditions_AMXX/commit/47c682051f2d1697a4b3d476f4f3cdd3eb1f6be7)
     set_task(6.274, "_OnConfigsExecuted");
 }
 
-public plugin_precache()
-{
-    g_iIconModelIndex = precache_model_ex(ICON_MODEL);
+public plugin_precache() {
+    icon_modelindex = precache_model_ex(ICON_MODEL);
 }
 
-public _OnConfigsExecuted()
-{
-    afk_effects = read_flags(g_szEffects);
+public _OnConfigsExecuted() {
+    afk_effects = read_flags(effects);
 }
 
-public client_disconnected(id)
-{
-    if(!is_nullent(g_iPlayerIcon[id]))
-    {
-        RemoveIcon(id);
+public client_disconnected(id) {
+    if (!is_nullent(afk_incon_ent_id[id])) {
+        remove_icon(id);
     }
 
     remove_task(id);
 }
 
-public player_start_afk_post(const id)
-{
-    ToggleEffects(id, true);
+public player_start_afk_post(const id) {
+    toggle_effects(id, true);
 }
 
-public player_end_afk_post(const id)
-{
-    ToggleEffects(id, false);
+public player_end_afk_post(const id) {
+    toggle_effects(id, false);
 }
 
-public RG_OnPlayerSpawn_Pre(const id)
-{
-    if(!is_user_alive(id))
+public player_spawn(const id) {
+    if (!is_user_alive(id)) {
         return;
+    }
 
-    ToggleEffects(id, false);
+    toggle_effects(id, false);
 }
 
-public RG_OnPlayerKilled_Pre(const id, pevAttacker, iGib)
-{
-    ToggleEffects(id, false);
+public player_killed(const id, attacker, gib) {
+    toggle_effects(id, false);
 }
 
-ToggleEffects(const id, bool:bState)
-{
-    if(bState)
-    {
-        if(afk_effects & Effects_Transparency)
-        {
+toggle_effects(const id, bool: state) {
+    if (state) {
+        if (afk_effects & Effects_Transparency) {
             rg_set_rendering(id, kRenderFxNone, 0.0, 0.0, 0.0, kRenderTransAlpha, 120.0);
         }
 
-        if(afk_effects & Effects_Icon)
-        {
-            if(is_nullent(g_iPlayerIcon[id]))
-            {
-                CreateIcon(id);
+        if (afk_effects & Effects_Icon) {
+            if (is_nullent(afk_incon_ent_id[id])) {
+                create_icon(id);
             }
 
-            ShowIcon(id);
+            show_icon(id);
         }
 
-        if(afk_effects & Effects_ScreenFade)
-        {
-            if(get_viewent(id) != id)
+        if (afk_effects & Effects_ScreenFade) {
+            if (get_viewent(id) != id) {
                 return;
+            }
 
             fade_user_screen(id, 
                 .duration = 0.0,
                 .fadetime = 0.0,
                 .flags = ScreenFade_StayOut,
-                .r = afk_random_screenfade_color ? random(255) : 0,
-                .g = afk_random_screenfade_color ? random(255) : 0,
-                .b = afk_random_screenfade_color ? random(255) : 0,
+                .r = afk_random_screenfade_color ? random_num(0, 255) : 0,
+                .g = afk_random_screenfade_color ? random_num(0, 255) : 0,
+                .b = afk_random_screenfade_color ? random_num(0, 255) : 0,
                 .a = afk_screenfade_amount
             );
 
-            if(afk_random_screenfade_color && afk_random_screenfade_type == 2)
-            {
-                set_task_ex(afk_random_screenfade_rotation_frequency, "SetNextScreenFade", id, .flags = SetTask_Repeat);
+            if (afk_random_screenfade_color && afk_random_screenfade_type == 2) {
+                set_task_ex(afk_random_screenfade_rotation_frequency, "set_next_screen_fade", id, .flags = SetTask_Repeat);
             }
         }
-    }
-    else
-    {
-        if(afk_effects & Effects_Transparency)
-        {
+    } else {
+        if (afk_effects & Effects_Transparency) {
             rg_set_rendering(id, kRenderFxNone, 0.0, 0.0, 0.0, kRenderNormal, 0.0);
         }
 
-        if(afk_effects & Effects_Icon)
-        {
-            HideIcon(id);
+        if (afk_effects & Effects_Icon) {
+            hide_icon(id);
         }
 
-        if(afk_effects & Effects_ScreenFade)
-        {
-            if(get_viewent(id) != id)
+        if (afk_effects & Effects_ScreenFade) {
+            if (get_viewent(id) != id) {
                 return;
+            }
 
             fade_user_screen(id, 
                 .duration = 0.0,
@@ -179,8 +159,7 @@ ToggleEffects(const id, bool:bState)
     }
 }
 
-public SetNextScreenFade(id)
-{
+public set_next_screen_fade(id) {
     fade_user_screen(id, 
         .duration = 0.0,
         .fadetime = 0.0,
@@ -192,55 +171,49 @@ public SetNextScreenFade(id)
     );
 }
 
-CreateIcon(const id)
-{
-    new iEnt = rg_create_entity("env_sprite");
+create_icon(const id) {
+    new ent = rg_create_entity("env_sprite");
 
-    set_entvar(iEnt, var_classname, ICON_CLASSNAME);
-    set_entvar(iEnt, var_model, ICON_MODEL);
-    set_entvar(iEnt, var_modelindex, g_iIconModelIndex);
-    set_entvar(iEnt, var_scale, 0.5);
-    set_entvar(iEnt, var_rendermode, kRenderTransAdd);
-    set_entvar(iEnt, var_renderamt, 100.0);
-    set_entvar(iEnt, var_framerate, 10.0);
-    set_entvar(iEnt, var_spawnflags, SF_SPRITE_STARTON);
-    set_entvar(iEnt, var_aiment, id);
-    set_entvar(iEnt, var_movetype, MOVETYPE_FOLLOW);
+    set_entvar(ent, var_classname, ICON_CLASSNAME);
+    set_entvar(ent, var_model, ICON_MODEL);
+    set_entvar(ent, var_modelindex, icon_modelindex);
+    set_entvar(ent, var_scale, 0.5);
+    set_entvar(ent, var_rendermode, kRenderTransAdd);
+    set_entvar(ent, var_renderamt, 100.0);
+    set_entvar(ent, var_framerate, 10.0);
+    set_entvar(ent, var_spawnflags, SF_SPRITE_STARTON);
+    set_entvar(ent, var_aiment, id);
+    set_entvar(ent, var_movetype, MOVETYPE_FOLLOW);
 
-    g_iPlayerIcon[id] = iEnt;
+    afk_incon_ent_id[id] = ent;
 
-    dllfunc(DLLFunc_Spawn, iEnt);
+    dllfunc(DLLFunc_Spawn, ent);
 
-    set_entvar(iEnt, var_effects, EF_NODRAW);
+    set_entvar(ent, var_effects, EF_NODRAW);
 }
 
-RemoveIcon(const id)
-{
-    set_entvar(g_iPlayerIcon[id], var_flags, FL_KILLME);
-
-    g_iPlayerIcon[id] = NULLENT;
+remove_icon(const id) {
+    set_entvar(afk_incon_ent_id[id], var_flags, FL_KILLME);
+    afk_incon_ent_id[id] = NULLENT;
 }
 
-ShowIcon(const id)
-{
-    set_entvar(g_iPlayerIcon[id], var_effects, 0);
+show_icon(const id) {
+    set_entvar(afk_incon_ent_id[id], var_effects, 0);
 }
 
-HideIcon(const id)
-{
-    set_entvar(g_iPlayerIcon[id], var_effects, EF_NODRAW);
+hide_icon(const id) {
+    set_entvar(afk_incon_ent_id[id], var_effects, EF_NODRAW);
 }
 
-CreateCVars()
-{
+create_cvars() {
     bind_pcvar_string(
-        g_pCvarEffects = create_cvar(
+        effects_cvar_pointer = create_cvar(
             .name = "afk_effects", 
             .string = "abc",
             .description = GetCvarDesc("UAFKM_CVAR_AFK_EFFECTS")
         ),
 
-        g_szEffects, charsmax(g_szEffects)
+        effects, charsmax(effects)
     );
 
     bind_pcvar_num(
@@ -284,32 +257,45 @@ CreateCVars()
     );
 }
 
-public CvarEffectsChanged(pCvar, const szOldValue[], const szNewValue[])
-{
-    afk_effects = read_flags(szNewValue);
+public hook_cvar_afk_effects(pCvar, const old_value[], const new_value[]) {
+    afk_effects = read_flags(new_value);
 }
 
-stock rg_set_rendering(const id, const iRenderFx, const Float:R, const Float:G, const Float:B, const iRenderMode, const Float:flRenderAmount)
-{
-    new Float:flRenderColor[3];
+stock rg_set_rendering(const id, const render_fx, const Float: R, const Float: G, const Float: B, const render_mode, const Float: render_amount) {
+    new Float: render_color[3];
 
-    flRenderColor[0] = R;
-    flRenderColor[1] = G;
-    flRenderColor[2] = B;
+    render_color[0] = R;
+    render_color[1] = G;
+    render_color[2] = B;
 
-    set_entvar(id, var_renderfx, iRenderFx);
-    set_entvar(id, var_rendercolor, flRenderColor);
-    set_entvar(id, var_rendermode, iRenderMode);
-    set_entvar(id, var_renderamt, flRenderAmount);
+    set_entvar(id, var_renderfx, render_fx);
+    set_entvar(id, var_rendercolor, render_color);
+    set_entvar(id, var_rendermode, render_mode);
+    set_entvar(id, var_renderamt, render_amount);
 }
 
-stock precache_model_ex(const szModelName[])
-{
-    if(file_exists(szModelName, true))
-    {
-        return precache_model(szModelName);
+stock precache_model_ex(const model_name[]) {
+    if (model_name[0] != EOS && file_exists(model_name, true)) {
+        return precache_model(model_name);
     }
 
-    set_fail_state("Model <%s> not found. Plugin stopped.", szModelName);
+    set_fail_state("Model <%s> not found. The plugin has been stopped.", model_name);
+    return 0;
+}
+
+stock get_amxx_verint() {
+    new buffer[16];
+    get_amxx_verstring(buffer, charsmax(buffer));
+
+    if (strfind(buffer, "1.10.0") != -1) {
+        return 1100;
+    } else if (strfind(buffer, "1.9.0") != -1) {
+        return 190;
+    } else if (strfind(buffer, "1.8.3") != -1) {
+        return 183;
+    } else if (strfind(buffer, "1.8.2") != -1) {
+        return 182;
+    }
+
     return 0;
 }
