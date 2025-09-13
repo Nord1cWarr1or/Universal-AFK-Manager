@@ -14,7 +14,7 @@ enum any: AFKEffectsFlags (<<=1) {
     Effects_Icon
 };
 
-new const ICON_MODEL[] = "sprites/afk/afk_6test.spr";
+new const ICON_MODEL[] = "sprites/afk/afk.spr";
 new const ICON_CLASSNAME[] = "afk_icon";
 
 // Automatically create a config in "configs/plugins"
@@ -97,8 +97,8 @@ public player_killed(const id, attacker, gib) {
     toggle_effects(id, false);
 }
 
-toggle_effects(const id, bool: state) {
-    if (state) {
+toggle_effects(const id, bool: effects_on) {
+    if (effects_on) {
         if (afk_effects & Effects_Transparency) {
             rg_set_rendering(id, kRenderFxNone, 0.0, 0.0, 0.0, kRenderTransAlpha, 120.0);
         }
