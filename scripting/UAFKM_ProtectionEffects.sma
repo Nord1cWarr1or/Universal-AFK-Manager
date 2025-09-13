@@ -136,6 +136,10 @@ toggle_effects(const id, bool: effects_on) {
         }
 
         if (afk_effects & Effects_Icon) {
+            if (is_nullent(afk_incon_ent_id[id])) {
+                return;
+            }
+
             hide_icon(id);
         }
 
