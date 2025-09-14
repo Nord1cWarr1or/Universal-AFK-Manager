@@ -1,6 +1,9 @@
 #include <amxmodx>
 #include <amxmisc>
 #include <reapi>
+#include <xs>
+
+enum any: AXIS { Float: X, Float: Y, Float: Z };
 
 enum any: API_FORWARDS {
     AFK_TIMER_THINK
@@ -10,6 +13,8 @@ enum any: API_FORWARDS {
 const Float: CHECK_FREQUENCY = 0.5;
 
 new Float: player_afk_timer[MAX_PLAYERS + 1];
+new bool: player_was_active[MAX_PLAYERS + 1];
+new Float: old_player_view_angle[MAX_PLAYERS + 1][AXIS];
 
 new forward_pointers[API_FORWARDS];
 new return_value;
@@ -26,44 +31,61 @@ public plugin_init() {
     }
 
     create_forwards();
-}
 
-public client_putinserver(id) {
-    if (is_user_bot(id) || is_user_hltv(id)) {
-        return;
-    }
-
-    set_task_ex(CHECK_FREQUENCY, "afk_check", id, .flags = SetTask_Repeat);
+    RegisterHookChain(RG_CBasePlayer_PreThink, "player_prethink");
+    set_task_ex(CHECK_FREQUENCY, "afk_check", .flags = SetTask_Repeat);
 }
 
 public client_disconnected(id) {
-    reset_data(id);
+    player_afk_timer[id] = 0.0;
+    player_was_active[id] = false;
+
+    xs_vec_set(old_player_view_angle[id], 0.0, 0.0, 0.0);
 }
 
-public afk_check(id) {
-    if (!is_user_connected(id)) {
-        reset_data(id);
+public player_prethink(const id) {
+    if (player_was_active[id]) {
         return;
     }
 
-    new TeamName: player_team = get_member(id, m_iTeam);
-    new bool: is_spectator = bool: (!is_user_alive(id) && (player_team == TEAM_UNASSIGNED || player_team == TEAM_SPECTATOR));
+    static Float: current_player_view_angle[AXIS];
+    get_entvar(id, var_v_angle, current_player_view_angle);
 
-    if (get_gametime() - Float: get_member(id, m_fLastMovement) > CHECK_FREQUENCY) {
-        player_afk_timer[id] += CHECK_FREQUENCY;
-
-        if (floatfract(player_afk_timer[id]) == 0.0) {
-            ExecuteForward(forward_pointers[AFK_TIMER_THINK], return_value, id, player_afk_timer[id], is_spectator);
-        }
-    } else {
-        player_afk_timer[id] = 0.0;
-        ExecuteForward(forward_pointers[AFK_TIMER_THINK], return_value, id, player_afk_timer[id], is_spectator);
+    if (
+        get_entvar(id, var_button) != 0
+            ||
+        !xs_vec_equal(current_player_view_angle, old_player_view_angle[id])
+    ) {
+        player_was_active[id] = true;
     }
+
+    old_player_view_angle[id] = current_player_view_angle;
 }
 
-reset_data(const id) {
-    remove_task(id);
-    player_afk_timer[id] = 0.0;
+public afk_check() {
+    new TeamName: player_team, bool: is_spectator;
+
+    for (new id = 1; id <= MaxClients; id++) {
+        if (!is_user_connected(id) || is_user_bot(id) || is_user_hltv(id)) {
+            continue;
+        }
+
+        player_team = get_member(id, m_iTeam);
+        is_spectator = bool: (!is_user_alive(id) && (player_team == TEAM_UNASSIGNED || player_team == TEAM_SPECTATOR));
+
+        if (!player_was_active[id]) {
+            player_afk_timer[id] += CHECK_FREQUENCY;
+
+            if (floatfract(player_afk_timer[id]) == 0.0) {
+                ExecuteForward(forward_pointers[AFK_TIMER_THINK], return_value, id, player_afk_timer[id], is_spectator);
+            }
+        } else {
+            player_afk_timer[id] = 0.0;
+            ExecuteForward(forward_pointers[AFK_TIMER_THINK], return_value, id, player_afk_timer[id], is_spectator);
+        }
+
+        player_was_active[id] = false;
+    }
 }
 
 create_forwards() {
