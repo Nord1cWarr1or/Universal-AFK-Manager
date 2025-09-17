@@ -85,12 +85,16 @@ public client_disconnected(id) {
     current_screenfade_color[id] = { 0, 0, 0 };
 }
 
-public player_start_afk_post(const id) {
-    toggle_effects(id, true);
+public player_start_afk_post(const id, bool: is_spectator) {
+    if (!is_spectator) {
+        toggle_effects(id, true);
+    }
 }
 
-public player_end_afk_post(const id) {
-    toggle_effects(id, false);
+public player_end_afk_post(const id, bool: is_spectator) {
+    if (!is_spectator) {
+        toggle_effects(id, false);
+    }
 }
 
 public player_spawn(const id) {
