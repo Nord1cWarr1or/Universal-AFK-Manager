@@ -1,6 +1,7 @@
 #include <amxmodx>
 #include <amxmisc>
 #include <fakemeta>
+#include <fakemeta_stocks>
 #include <reapi>
 
 #include <msgstocks>
@@ -15,7 +16,7 @@ enum any: AFKEffectsFlags (<<=1) {
 };
 
 /* <-- Icon model settings --> */
-new const ICON_MODEL[] = "sprites/afk/afk.spr";
+new const ICON_MODEL[] = "sprites/afk/afk2.spr";
 const Float: ICON_SCALE = 0.5;
 const Float: ICON_RENDER_AMT = 100.0;
 const Float: ICON_ANIM_FRAMERATE = 10.0;
@@ -28,16 +29,13 @@ new const ICON_CLASSNAME[] = "afk_icon";
 #define AUTO_CREATE_CONFIG
 
 new icon_modelindex;
-new effects_cvar_pointer;
-new afk_incon_ent_id[MAX_PLAYERS + 1] = { NULLENT, ... };
+new afk_icon_ent_id[MAX_PLAYERS + 1] = { NULLENT, ... };
 
 new afk_effects,
     afk_screenfade_amount,
     afk_random_screenfade_color,
     afk_random_screenfade_type,
     Float:afk_random_screenfade_rotation_frequency
-
-new effects[4];
 
 public stock const PluginName[]         = "UAFKM: Protection Effects";
 public stock const PluginVersion[]      = "0.1.0";
@@ -60,24 +58,21 @@ public plugin_init() {
 #if defined AUTO_CREATE_CONFIG
     AutoExecConfig();
 #endif
-
-    hook_cvar_change(effects_cvar_pointer, "hook_cvar_afk_effects");
-
-    // Fix https://github.com/alliedmodders/amxmodx/issues/728#issue-450682936
-    // Credits: wopox1337 (https://github.com/ChatAdditions/ChatAdditions_AMXX/commit/47c682051f2d1697a4b3d476f4f3cdd3eb1f6be7)
-    set_task(6.274, "_OnConfigsExecuted");
 }
 
 public plugin_precache() {
     icon_modelindex = precache_model_ex(ICON_MODEL);
 }
 
-public _OnConfigsExecuted() {
-    afk_effects = read_flags(effects);
+public plugin_cfg() {
+    new current_value[16];
+    get_cvar_string("afk_effects", current_value, charsmax(current_value));
+
+    afk_effects = read_flags(current_value);
 }
 
 public client_disconnected(id) {
-    if (!is_nullent(afk_incon_ent_id[id])) {
+    if (!is_nullent(afk_icon_ent_id[id])) {
         remove_icon(id);
     }
 
@@ -111,7 +106,7 @@ toggle_effects(const id, bool: effects_on) {
         }
 
         if (afk_effects & Effects_Icon) {
-            if (is_nullent(afk_incon_ent_id[id])) {
+            if (is_nullent(afk_icon_ent_id[id])) {
                 create_icon(id);
             }
 
@@ -143,7 +138,7 @@ toggle_effects(const id, bool: effects_on) {
         }
 
         if (afk_effects & Effects_Icon) {
-            if (is_nullent(afk_incon_ent_id[id])) {
+            if (is_nullent(afk_icon_ent_id[id])) {
                 return;
             }
 
@@ -196,76 +191,43 @@ create_icon(const id) {
     set_entvar(ent, var_aiment, id);
     set_entvar(ent, var_movetype, MOVETYPE_FOLLOW);
 
-    afk_incon_ent_id[id] = ent;
+    afk_icon_ent_id[id] = ent;
 
-    dllfunc(DLLFunc_Spawn, ent);
+    DF_Spawn(ent);
 
     set_entvar(ent, var_effects, EF_NODRAW);
 }
 
 remove_icon(const id) {
-    set_entvar(afk_incon_ent_id[id], var_flags, FL_KILLME);
-    afk_incon_ent_id[id] = NULLENT;
+    set_entvar(afk_icon_ent_id[id], var_flags, FL_KILLME);
+    afk_icon_ent_id[id] = NULLENT;
 }
 
 show_icon(const id) {
-    set_entvar(afk_incon_ent_id[id], var_effects, 0);
+    set_entvar(afk_icon_ent_id[id], var_effects, 0);
 }
 
 hide_icon(const id) {
-    set_entvar(afk_incon_ent_id[id], var_effects, EF_NODRAW);
+    set_entvar(afk_icon_ent_id[id], var_effects, EF_NODRAW);
 }
 
 create_cvars() {
-    bind_pcvar_string(
-        effects_cvar_pointer = create_cvar(
-            .name = "afk_effects", 
-            .string = "abc",
-            .description = GetCvarDesc("UAFKM_CVAR_AFK_EFFECTS")
-        ),
+    new cvar_pointer;
 
-        effects, charsmax(effects)
-    );
+    cvar_pointer = create_cvar("afk_effects", "abc", _, GetCvarDesc("UAFKM_CVAR_AFK_EFFECTS"));
+    hook_cvar_change(cvar_pointer, "hook_cvar_afk_effects");
 
-    bind_pcvar_num(
-        create_cvar(
-            .name = "afk_screenfade_amount", 
-            .string = "110",
-            .description = GetCvarDesc("UAFKM_CVAR_AFK_SCREENFADE_AMOUNT")
-        ),
+    cvar_pointer = create_cvar("afk_screenfade_amount", "110", _, GetCvarDesc("UAFKM_CVAR_AFK_SCREENFADE_AMOUNT"));
+    bind_pcvar_num(cvar_pointer, afk_screenfade_amount);
 
-        afk_screenfade_amount
-    );
+    cvar_pointer = create_cvar("afk_random_screenfade_color", "0", _, GetCvarDesc("UAFKM_CVAR_AFK_RANDOM_SCREENFADE_COLOR"));
+    bind_pcvar_num(cvar_pointer, afk_random_screenfade_color);
 
-    bind_pcvar_num(
-        create_cvar(
-            .name = "afk_random_screenfade_color", 
-            .string = "0",
-            .description = GetCvarDesc("UAFKM_CVAR_AFK_RANDOM_SCREENFADE_COLOR")
-        ),
+    cvar_pointer = create_cvar("afk_random_screenfade_type", "1", _, GetCvarDesc("UAFKM_CVAR_AFK_RANDOM_SCREENFADE_TYPE"));
+    bind_pcvar_num(cvar_pointer, afk_random_screenfade_type);
 
-        afk_random_screenfade_color
-    );
-
-    bind_pcvar_num(
-        create_cvar(
-            .name = "afk_random_screenfade_type", 
-            .string = "1",
-            .description = GetCvarDesc("UAFKM_CVAR_AFK_RANDOM_SCREENFADE_TYPE")
-        ),
-
-        afk_random_screenfade_type
-    );
-
-    bind_pcvar_float(
-        create_cvar(
-            .name = "afk_random_screenfade_rotation_frequency", 
-            .string = "1.5",
-            .description = GetCvarDesc("UAFKM_CVAR_AFK_RANDOM_SCREENFADE_ROTATION_FREQUENCY")
-        ),
-
-        afk_random_screenfade_rotation_frequency
-    );
+    cvar_pointer = create_cvar("afk_random_screenfade_rotation_frequency", "1.5", _, GetCvarDesc("UAFKM_CVAR_AFK_RANDOM_SCREENFADE_ROTATION_FREQUENCY"));
+    bind_pcvar_float(cvar_pointer, afk_random_screenfade_rotation_frequency);
 }
 
 public hook_cvar_afk_effects(pCvar, const old_value[], const new_value[]) {
