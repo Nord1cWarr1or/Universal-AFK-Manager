@@ -16,7 +16,7 @@ enum any: AFKEffectsFlags (<<=1) {
 };
 
 /* <-- Icon model settings --> */
-new const ICON_MODEL[] = "sprites/afk/afk2.spr";
+new const ICON_MODEL[] = "sprites/afk/afk_2.spr";
 const Float: ICON_SCALE = 0.5;
 const Float: ICON_RENDER_AMT = 100.0;
 const Float: ICON_ANIM_FRAMERATE = 10.0;
@@ -34,8 +34,7 @@ new afk_icon_ent_id[MAX_PLAYERS + 1] = { NULLENT, ... };
 new afk_effects,
     afk_screenfade_amount,
     afk_random_screenfade_color,
-    afk_random_screenfade_type,
-    Float:afk_random_screenfade_rotation_frequency
+    Float: afk_random_screenfade_rotation_frequency
 
 public stock const PluginName[]         = "UAFKM: Protection Effects";
 public stock const PluginVersion[]      = "0.1.0";
@@ -122,13 +121,13 @@ toggle_effects(const id, bool: effects_on) {
                 .duration = 0.0,
                 .fadetime = 0.0,
                 .flags = ScreenFade_StayOut,
-                .r = afk_random_screenfade_color ? random_num(0, 255) : 0,
-                .g = afk_random_screenfade_color ? random_num(0, 255) : 0,
-                .b = afk_random_screenfade_color ? random_num(0, 255) : 0,
+                .r = afk_random_screenfade_color > 0 ? random_num(0, 255) : 0,
+                .g = afk_random_screenfade_color > 0 ? random_num(0, 255) : 0,
+                .b = afk_random_screenfade_color > 0 ? random_num(0, 255) : 0,
                 .a = afk_screenfade_amount
             );
 
-            if (afk_random_screenfade_color && afk_random_screenfade_type == 2) {
+            if (afk_random_screenfade_color == 2) {
                 set_task_ex(afk_random_screenfade_rotation_frequency, "set_next_screen_fade", id, .flags = SetTask_Repeat);
             }
         }
@@ -152,7 +151,7 @@ toggle_effects(const id, bool: effects_on) {
 
             fade_user_screen(id, 
                 .duration = 0.0,
-                .fadetime = afk_random_screenfade_color ? 0.0 : 1.0,
+                .fadetime = afk_random_screenfade_color > 0 ? 0.0 : 1.0,
                 .flags = ScreenFade_FadeIn,
                 .r = 0,
                 .g = 0,
@@ -222,9 +221,6 @@ create_cvars() {
 
     cvar_pointer = create_cvar("afk_random_screenfade_color", "0", _, GetCvarDesc("UAFKM_CVAR_AFK_RANDOM_SCREENFADE_COLOR"));
     bind_pcvar_num(cvar_pointer, afk_random_screenfade_color);
-
-    cvar_pointer = create_cvar("afk_random_screenfade_type", "1", _, GetCvarDesc("UAFKM_CVAR_AFK_RANDOM_SCREENFADE_TYPE"));
-    bind_pcvar_num(cvar_pointer, afk_random_screenfade_type);
 
     cvar_pointer = create_cvar("afk_random_screenfade_rotation_frequency", "1.5", _, GetCvarDesc("UAFKM_CVAR_AFK_RANDOM_SCREENFADE_ROTATION_FREQUENCY"));
     bind_pcvar_float(cvar_pointer, afk_random_screenfade_rotation_frequency);
