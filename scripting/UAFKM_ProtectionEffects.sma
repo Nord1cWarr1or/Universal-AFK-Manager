@@ -160,6 +160,8 @@ toggle_effects(const id, bool: effects_on) {
         }
 
         if (afk_effects & Effects_ScreenFade) {
+            remove_task(id);
+
             if (get_viewent(id) != id) {
                 return;
             }
@@ -173,8 +175,6 @@ toggle_effects(const id, bool: effects_on) {
                 .b = current_screenfade_color[id][B],
                 .a = afk_screenfade_amount
             );
-
-            remove_task(id);
         }
     }
 }
