@@ -14,7 +14,14 @@ enum any: AFKEffectsFlags (<<=1) {
     Effects_Icon
 };
 
+/* <-- Icon model settings --> */
 new const ICON_MODEL[] = "sprites/afk/afk.spr";
+const Float: ICON_SCALE = 0.5;
+const Float: ICON_RENDER_AMT = 100.0;
+const Float: ICON_ANIM_FRAMERATE = 10.0;
+const ICON_RENDERMODE = kRenderTransAdd;
+/* <-- End --> */
+
 new const ICON_CLASSNAME[] = "afk_icon";
 
 // Automatically create a config in "configs/plugins"
@@ -181,10 +188,10 @@ create_icon(const id) {
     set_entvar(ent, var_classname, ICON_CLASSNAME);
     set_entvar(ent, var_model, ICON_MODEL);
     set_entvar(ent, var_modelindex, icon_modelindex);
-    set_entvar(ent, var_scale, 0.5);
-    set_entvar(ent, var_rendermode, kRenderTransAdd);
-    set_entvar(ent, var_renderamt, 100.0);
-    set_entvar(ent, var_framerate, 10.0);
+    set_entvar(ent, var_scale, ICON_SCALE);
+    set_entvar(ent, var_rendermode, ICON_RENDERMODE);
+    set_entvar(ent, var_renderamt, ICON_RENDER_AMT);
+    set_entvar(ent, var_framerate, ICON_ANIM_FRAMERATE);
     set_entvar(ent, var_spawnflags, SF_SPRITE_STARTON);
     set_entvar(ent, var_aiment, id);
     set_entvar(ent, var_movetype, MOVETYPE_FOLLOW);
