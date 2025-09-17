@@ -7,7 +7,11 @@
 #include <msgstocks>
 #include <uafkm_handler>
 
-#define GetCvarDesc(%0) fmt("%L", LANG_SERVER, %0)
+#define GetCvarDesc(%0)     fmt("%L", LANG_SERVER, %0)
+
+#define RANDOM_RGB_COLOR    random_num(0, 255)
+
+enum any: RGB { R, G, B };
 
 enum any: AFKEffectsFlags (<<=1) {
     Effects_Transparency = 1,
@@ -23,13 +27,14 @@ const Float: ICON_ANIM_FRAMERATE = 10.0;
 const ICON_RENDERMODE = kRenderTransAdd;
 /* <-- End --> */
 
-new const ICON_CLASSNAME[] = "afk_icon";
-
 // Automatically create a config in "configs/plugins"
 #define AUTO_CREATE_CONFIG
 
+new const ICON_CLASSNAME[] = "afk_icon";
+
 new icon_modelindex;
 new afk_icon_ent_id[MAX_PLAYERS + 1] = { NULLENT, ... };
+new current_screenfade_color[MAX_PLAYERS + 1][RGB];
 
 new afk_effects,
     afk_screenfade_amount,
@@ -76,6 +81,8 @@ public client_disconnected(id) {
     }
 
     remove_task(id);
+
+    current_screenfade_color[id] = { 0, 0, 0 };
 }
 
 public player_start_afk_post(const id) {
@@ -117,13 +124,21 @@ toggle_effects(const id, bool: effects_on) {
                 return;
             }
 
+            if (afk_random_screenfade_color > 0) {
+                current_screenfade_color[id][R] = RANDOM_RGB_COLOR;
+                current_screenfade_color[id][G] = RANDOM_RGB_COLOR;
+                current_screenfade_color[id][B] = RANDOM_RGB_COLOR;
+            } else {
+                current_screenfade_color[id] = { 0, 0, 0 };
+            }
+
             fade_user_screen(id, 
                 .duration = 0.0,
                 .fadetime = 0.0,
                 .flags = ScreenFade_StayOut,
-                .r = afk_random_screenfade_color > 0 ? random_num(0, 255) : 0,
-                .g = afk_random_screenfade_color > 0 ? random_num(0, 255) : 0,
-                .b = afk_random_screenfade_color > 0 ? random_num(0, 255) : 0,
+                .r = current_screenfade_color[id][R],
+                .g = current_screenfade_color[id][G],
+                .b = current_screenfade_color[id][B],
                 .a = afk_screenfade_amount
             );
 
@@ -151,11 +166,11 @@ toggle_effects(const id, bool: effects_on) {
 
             fade_user_screen(id, 
                 .duration = 0.0,
-                .fadetime = afk_random_screenfade_color > 0 ? 0.0 : 1.0,
+                .fadetime = 1.0,
                 .flags = ScreenFade_FadeIn,
-                .r = 0,
-                .g = 0,
-                .b = 0,
+                .r = current_screenfade_color[id][R],
+                .g = current_screenfade_color[id][G],
+                .b = current_screenfade_color[id][B],
                 .a = afk_screenfade_amount
             );
 
@@ -165,13 +180,17 @@ toggle_effects(const id, bool: effects_on) {
 }
 
 public set_next_screen_fade(id) {
+    current_screenfade_color[id][R] = RANDOM_RGB_COLOR;
+    current_screenfade_color[id][G] = RANDOM_RGB_COLOR;
+    current_screenfade_color[id][B] = RANDOM_RGB_COLOR;
+
     fade_user_screen(id, 
         .duration = 0.0,
         .fadetime = 0.0,
         .flags = ScreenFade_StayOut,
-        .r = random_num(10, 255),
-        .g = random_num(10, 255),
-        .b = random_num(10, 255),
+        .r = current_screenfade_color[id][R],
+        .g = current_screenfade_color[id][G],
+        .b = current_screenfade_color[id][B],
         .a = afk_screenfade_amount
     );
 }
@@ -230,12 +249,12 @@ public hook_cvar_afk_effects(pCvar, const old_value[], const new_value[]) {
     afk_effects = read_flags(new_value);
 }
 
-stock rg_set_rendering(const id, const render_fx, const Float: R, const Float: G, const Float: B, const render_mode, const Float: render_amount) {
+stock rg_set_rendering(const id, const render_fx, const Float: red, const Float: green, const Float: blue, const render_mode, const Float: render_amount) {
     new Float: render_color[3];
 
-    render_color[0] = R;
-    render_color[1] = G;
-    render_color[2] = B;
+    render_color[0] = red;
+    render_color[1] = green;
+    render_color[2] = blue;
 
     set_entvar(id, var_renderfx, render_fx);
     set_entvar(id, var_rendercolor, render_color);
